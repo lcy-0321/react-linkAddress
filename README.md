@@ -1,68 +1,94 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 四级联动地址选择器（下拉框选择地区）
 
-## Available Scripts
+这是一个用react封装的四级联动地址选择器组件
 
-In the project directory, you can run:
+### Step 1
+```html
+$ yarn install 
+```
+### Step 2
+```html
+$ yarn start
+```
+### Step 3
+点击输入框触发事件代码
+```javascript
+//点击输入框
+$(document).on('click', (this._mouteclick = function (e) {
+    var $target = $(e.target);
+    var $dropdown, $span, $input;
+    if ($target.is('.city-picker-span')) {
+        $span = $target;
+    } else if ($target.is('.city-picker-span *')) {
+        $span = $target.parents('.city-picker-span');
+    }
+    if ($target.is('.city-picker-input')) {
+        $input = $target;
+    }
+    if ($target.is('.city-picker-dropdown')) {
+        $dropdown = $target;
+    } else if ($target.is('.city-picker-dropdown *')) {
+        $dropdown = $target.parents('.city-picker-dropdown');
+    }
+    if ((!$input && !$span && !$dropdown) ||
+        ($span && $span.get(0) !== $this.$textspan.get(0)) ||
+        ($input && $input.get(0) !== $this.$element.get(0)) ||
+        ($dropdown && $dropdown.get(0) !== $this.$dropdown.get(0))) {
+        $this.close(true);
+    }
+}));
+```
+### Step 4
+给搜索的点创建地标marker
+```javascript
+	layPoint = (e) => {
+      const map = new BMap.Map("address"); // 创建Map实例
+      // 清楚点
+      map.clearOverlays();
+      if(e !== undefined){
+        // 添加点
+        const point = new BMap.Point(e.lng, e.lat);//根据经纬度添加点坐标
+        map.centerAndZoom(point, 15);
+        const marker = new BMap.Marker(point); // 创建标注
+        map.addOverlay(marker); // 将标注添加到地图中
+        marker.enableDragging(); // 可拖拽
+      }else{
+        map.centerAndZoom("长沙"); // 初始化地图,设置中心点坐标和地图级别
+        this.mapOnconfirm(map)//点击智能检索下拉框出发
+      }
+      map.addEventListener('click', this.mapOnclick);//点击地图
+      map.enableScrollWheelZoom();//启用地图放大缩小
+    };
+```
+### Step 5
+百度地图的反向地址解析功能
 
-### `npm start`
+```javascript
+mapOnclick = (e) => {
+        const This = this;
+        This.layPoint(e.point)
+        const geoc = new BMap.Geocoder()// 创建地址解析器实例
+        // 将地址解析结果显示在地图上，并调整地图视野
+        geoc.getLocation(e.point, function (rs) {
+            //点击地图获取地标
+            var myValue;
+            if(rs.surroundingPois.length>0){
+                myValue=rs.surroundingPois[0].title
+            }else{
+                const _value = rs.addressComponents;
+                myValue =  _value.district +  _value.city + _value.street + _value.streetNumber
+            }
+            This.setState(()=>{
+                return {
+                    value: myValue
+                }
+            });
+        }); 
+    };
+```
+展示效果
+![](https://img-blog.csdnimg.cn/20200512144932854.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2NoZW55dWVsaXU=,size_16,color_FFFFFF,t_70)
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+附上原理解析步骤https://blog.csdn.net/chenyueliu/article/details/106055965
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+## At last, 祝玩得愉快！我会继续完善功能。
